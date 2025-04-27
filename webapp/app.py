@@ -66,7 +66,6 @@ elif section == "📊 Revenue by Category":
         st.dataframe(df.style.format({"revenue": "${:,.2f}"}), use_container_width=True)
         st.bar_chart(df.set_index("category_name"))
 
-# 3️⃣ Monthly Trend
 elif section == "📈 Monthly Trend":
     st.subheader("📈 Monthly Revenue Over Time")
     query = """
@@ -80,17 +79,26 @@ elif section == "📈 Monthly Trend":
     df = run_query(query)
     if not df.empty:
         df["month"] = pd.to_datetime(df["month"], utc=True).dt.tz_convert(None)
-
+        
+        # Convert pandas timestamps to plain Python datetime
         min_date = df["month"].min().to_pydatetime()
         max_date = df["month"].max().to_pydatetime()
+        
+        # Fix if min_date and max_date are the same
+        if min_date == max_date:
+            max_date = min_date + pd.Timedelta(days=30)  # Adjust by 30 days if they're the same
 
-        start, end = st.slider("Select Date Range", min_value=min_date, max_value=max_date,
-                               value=(min_date, max_date), format="YYYY-MM")
-
+        start, end = st.slider(
+            "Select Date Range", 
+            min_value=min_date, 
+            max_value=max_date,
+            value=(min_date, max_date),
+            format="YYYY-MM"
+        )
+        
         filtered = df[(df["month"] >= start) & (df["month"] <= end)]
         filtered.set_index("month", inplace=True)
         st.line_chart(filtered)
-
 # 4️⃣ Payment Status
 elif section == "💳 Payment Status":
     st.subheader("💳 Payment Status Breakdown")
