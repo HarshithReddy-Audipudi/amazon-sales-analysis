@@ -8,10 +8,12 @@ st.set_page_config(page_title="Amazon USA Sales Dashboard", layout="wide", page_
 st.title("📦 Amazon USA Sales Dashboard")
 st.markdown("Explore sales insights with interactive charts and queries 📊")
 
-# 🔌 PostgreSQL connection using pg8000
+# 🔌 PostgreSQL connection using psycopg2
 @st.cache_resource
 def get_engine():
-    return create_engine("postgresql+pg8000://postgres:180068@localhost:5432/amazon")
+    return create_engine(
+        "postgresql+psycopg2://new_postgresql_database_o6b9_user:w6jr1HNZE7jRZUuzNDJEyXIewOWX7Pp8@dpg-d06p6s3uibrs73eqbgn0-a.oregon-postgres.render.com/new_postgresql_database_o6b9"
+    )
 
 engine = get_engine()
 
@@ -78,14 +80,13 @@ elif section == "📈 Monthly Trend":
     df = run_query(query)
     if not df.empty:
         df["month"] = pd.to_datetime(df["month"], utc=True).dt.tz_convert(None)
-        
-        # ✅ Convert pandas timestamps to plain Python datetime
+
         min_date = df["month"].min().to_pydatetime()
         max_date = df["month"].max().to_pydatetime()
-        
+
         start, end = st.slider("Select Date Range", min_value=min_date, max_value=max_date,
                                value=(min_date, max_date), format="YYYY-MM")
-        
+
         filtered = df[(df["month"] >= start) & (df["month"] <= end)]
         filtered.set_index("month", inplace=True)
         st.line_chart(filtered)
